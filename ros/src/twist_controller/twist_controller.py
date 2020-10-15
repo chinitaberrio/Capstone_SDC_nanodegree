@@ -38,22 +38,21 @@ class Controller(object):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
         if not dbw_enabled:
-            self.throttle_controller.reset()
+            self.reset()
             return 0., 0., 0.
 
-        current_vel = self.vel_lpf.filt(current_vel)
-
         steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
+        throttle = self.throttle_controller.step(vel_error, sample_time)
+        brake = 0
+        
+        current_time = rospy.get_time()
+        current_vel = self.vel_lpf.filt(current_vel)
 
         vel_error = linear_vel - current_vel
         self.last_vel = current_vel
 
-        current_time = rospy.get_time()
         sample_time = current_time - self.last_time
         self.last_time = current_time
-
-        throttle = self.throttle_controller.step(vel_error, sample_time)
-        brake = 0
 
         if linear_vel == 0. and current_vel < 0.1:
             throttle = 0
@@ -66,7 +65,10 @@ class Controller(object):
 
         return throttle, brake, steering
 
-
+    def reset(self):
+    # Reset the state value
+        self.throttle_controller.reset()
+        self.low_pass_filter.reset()
 
 
 
