@@ -35,7 +35,7 @@ class WaypointUpdater(object):
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
-        #rospy.Subscriber('/traffic_waypoint', xx, self.tf_waypoints_cb)
+        # rospy.Subscriber('/traffic_waypoint', xx, self.tf_waypoints_cb)
         #rospy.Subscriber('/obstacle_waypoint', x, self.obs_waypoints_cb)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
@@ -86,11 +86,12 @@ class WaypointUpdater(object):
         closest_idx = self.get_closer_waypoint_id()
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
+        #rospy.logwarn('self.stopline_wp_idx = %s', self.stopline_wp_idx)
 
         if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
             lane.waypoints = base_waypoints
         else:
-            lane.waypoints = self.decelarate_waypoints(base_waypoints, closest_idx)
+            lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
 
         return lane
 
