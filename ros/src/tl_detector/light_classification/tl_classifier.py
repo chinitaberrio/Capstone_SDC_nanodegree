@@ -36,12 +36,10 @@ class TLClassifier(object):
         #TODO load classifier
         self.model = load_model('/home/workspace/yolo/model.h5')
         self.model._make_predict_function()
-        # define the expected input shape for the model
+        # define the expected input shape for the model - this does not change
         self.input_w, self.input_h = 416, 416
-        self.num = 0;
-        pass
 
-    def _sigmoid(self,x):
+    def _sigmoid(self, x):
         return 1. / (1. + np.exp(-x))
 
     def decode_netout(self, netout, anchors, obj_thresh, net_h, net_w):
@@ -124,21 +122,18 @@ class TLClassifier(object):
 
 
     # get all of the results above a threshold
-    def get_boxes(self, boxes, labels, thresh):
-        v_boxes, v_labels, v_scores = list(), list(), list()
+    def get_boxes(self, boxes, thresh):
+        v_boxes, v_scores = list(), list()
         # enumerate all boxes
         for box in boxes:
             # enumerate all possible labels
-            for i in range(len(labels)):
-                # check if the threshold for this label is high enough
-                if box.classes[i] > thresh:
-                    v_boxes.append(box)
-                    v_labels.append(labels[i])
-                    v_scores.append(box.classes[i] * 100)
-                    # don't break, many labels may trigger for one box
-        return v_boxes, v_labels, v_scores
+            if box.classes[9] > thresh: #Looking only for traffic lights - label 10
+                v_boxes.append(box)
+                v_scores.append(box.classes[9] * 100)
+            
+        return v_boxes, v_scores
 
-    def draw_boxes(self, filename, image, v_boxes, v_labels, v_scores):
+    def draw_boxes(self, filename, image, v_boxes, v_scores):
 
         # plot each box
         for i in range(len(v_boxes)):
@@ -151,7 +146,6 @@ class TLClassifier(object):
             cv2.imwrite(filename,image)
             
 
-
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
 
@@ -162,19 +156,15 @@ class TLClassifier(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        # convert to numpy array
-        
-        im = img_to_array(image)
-        image_h,  image_w , channel = im.shape
+        # getting the size of the image       
+        image_h,  image_w , channel = image.shape
         # scale pixel values to [0, 1]
-        img = cv2.resize(im,(self.input_w, self.input_h))
+        img = cv2.resize(image,(self.input_w, self.input_h))
         img = img.astype('float32')
         img /= 255.0
-        rospy.logwarn(img.shape)
         # add a dimension so that we have one sample
         img = expand_dims(img, 0)
-        rospy.logwarn(im.shape)
-        
+        # perform prediction
         yhat = self.model.predict(img)
         anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
         # define the probability threshold for detected objects
@@ -187,31 +177,16 @@ class TLClassifier(object):
         self.correct_yolo_boxes(boxes, image_h, image_w, self.input_h, self.input_w)
         # suppress non-maximal boxes
         self.do_nms(boxes, 0.5)
-        # define the labels
-        labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck",
-                  "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
-                  "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-                  "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-                  "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-                  "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana",
-                  "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
-                  "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
-                  "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
-                  "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
-        # get the details of the detected objects
-        v_boxes, v_labels, v_scores = self.get_boxes(boxes, labels, class_threshold)
-        # summarize what we found
-        name = '/home/workspace/detection' + str(self.num) + '.jpg'
-        self.num +=1
-        self.draw_boxes(name, image, v_boxes, v_labels, v_scores)
+        # get the details of the traffic light objects
+        v_boxes, v_scores = self.get_boxes(boxes, class_threshold)
+        #name = '/home/workspace/traffic_2.jpg'
+        #self.draw_boxes(name, image, v_boxes, v_scores)
+        
         state = 4
-        rospy.logwarn('image class here')
         for i in range(len(v_boxes)):
-            if (v_labels [i] == "traffic light"):
-                #do something to detect if red
-
-                state = 0
-                break
-
-        #TODO implement light color prediction
+            #crop_img = img[v_boxes[i].miny:v_boxes[i].maxy, v_boxes[i].miny:v_boxes[i].maxy]
+            #do something to detect if red
+            #return state = 0
+            pass
+        
         return state
