@@ -8,28 +8,13 @@ from cv_bridge import CvBridge
 import rospy
 
 class BoundBox:
-    def __init__(self, xmin, ymin, xmax, ymax, objness = None, classes = None):
+    def __init__(self, xmin, ymin, xmax, ymax):
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
         self.ymax = ymax
-        self.objness = objness
-        self.classes = classes
         self.label = -1
         self.score = -1
-
-    def get_label(self):
-        if self.label == -1:
-            self.label = np.argmax(self.classes)
-
-        return self.label
-
-    def get_score(self):
-        if self.score == -1:
-            self.score = self.classes[self.get_label()]
-
-        return self.score
-
 
 class TLClassifier(object):
     def __init__(self):
@@ -57,19 +42,18 @@ class TLClassifier(object):
             row = i / grid_w
             col = i % grid_w
             for b in range(nb_box):
-                # 4th element is objectness score
-                objectness = netout[int(row)][int(col)][b][4]
-                if objectness.all() <= obj_thresh: continue
-                # first 4 elements are x, y, w, and h
-                x, y, w, h = netout[int(row)][int(col)][b][:4]
-                x = (col + x) / grid_w  # center position, unit: image width
-                y = (row + y) / grid_h  # center position, unit: image height
-                w = anchors[2 * b + 0] * np.exp(w) / net_w  # unit: image width
-                h = anchors[2 * b + 1] * np.exp(h) / net_h  # unit: image height
-                # last elements are class probabilities
                 classes = netout[int(row)][col][b][5:]
-                box = BoundBox(x - w / 2, y - h / 2, x + w / 2, y + h / 2, objectness, classes)
-                boxes.append(box)
+                if classes[9] > obj_thresh:
+                    # first 4 elements are x, y, w, and h
+                    x, y, w, h = netout[int(row)][int(col)][b][:4]
+                    x = (col + x) / grid_w # center position, unit: image width
+                    y = (row + y) / grid_h # center position, unit: image height
+                    w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
+                    h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height
+                    # last elements are class probabilities
+                    classes = netout[int(row)][col][b][5:]
+                    box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2)
+                    boxes.append(box)
         return boxes
 
     def correct_yolo_boxes(self, boxes, image_h, image_w, net_h, net_w):
@@ -121,19 +105,7 @@ class TLClassifier(object):
                         boxes[index_j].classes[c] = 0
 
 
-    # get all of the results above a threshold
-    def get_boxes(self, boxes, thresh):
-        v_boxes, v_scores = list(), list()
-        # enumerate all boxes
-        for box in boxes:
-            # enumerate all possible labels
-            if box.classes[9] > thresh: #Looking only for traffic lights - label 10
-                v_boxes.append(box)
-                v_scores.append(box.classes[9] * 100)
-            
-        return v_boxes, v_scores
-
-    def draw_boxes(self, filename, image, v_boxes, v_scores):
+    def draw_boxes(self, filename, image, v_boxes):
 
         # plot each box
         for i in range(len(v_boxes)):
@@ -165,9 +137,9 @@ class TLClassifier(object):
         # add a dimension so that we have one sample
         img = expand_dims(img, 0)
         # perform prediction
-        rospy.logwarn('before')
+        #rospy.logwarn('before')
         yhat = self.model.predict(img)
-        rospy.logwarn('after')
+        #rospy.logwarn('after')
         anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
         # define the probability threshold for detected objects
         class_threshold = 0.8
@@ -178,15 +150,17 @@ class TLClassifier(object):
         # correct the sizes of the bounding boxes for the shape of the image
         self.correct_yolo_boxes(boxes, image_h, image_w, self.input_h, self.input_w)
         # suppress non-maximal boxes
-        self.do_nms(boxes, 0.5)
+        #self.do_nms(boxes, 0.5)
         # get the details of the traffic light objects
-        v_boxes, v_scores = self.get_boxes(boxes, class_threshold)
-        #name = '/home/workspace/traffic_2.jpg'
-        #self.draw_boxes(name, image, v_boxes, v_scores)
+        #v_boxes, v_scores = self.get_boxes(boxes, class_threshold)
+        #name = '/home/workspace/traffic'+str(rospy.get_time())+'.jpg'
+        #self.draw_boxes(name, image, boxes)
         
         state = 4
-        for i in range(len(v_boxes)):
-            #crop_img = img[v_boxes[i].miny:v_boxes[i].maxy, v_boxes[i].miny:v_boxes[i].maxy]
+        for i in range(len(boxes)):
+            # Fereshteh code
+            
+            #crop_img = img[boxes[i].miny:boxes[i].maxy, boxes[i].miny:boxes[i].maxy]
             #do something to detect if red
             #return state = 0
             pass
