@@ -25,6 +25,14 @@ class TLDetector(object):
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        
+        self.state = TrafficLight.UNKNOWN
+        self.last_state = TrafficLight.UNKNOWN
+        self.last_wp = -1
+        self.state_count = 0
+
+        self.waypoint_tree = None
+        self.waypoints_2d = None
 
         '''
         /vehicle/traffic_lights provides you with the location of the traffic light in 3D map space and
@@ -45,13 +53,7 @@ class TLDetector(object):
         self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
-        self.state = TrafficLight.UNKNOWN
-        self.last_state = TrafficLight.UNKNOWN
-        self.last_wp = -1
-        self.state_count = 0
-
-        self.waypoint_tree = None
-        self.waypoints_2d = None
+        
 
         rospy.spin()
 
@@ -66,6 +68,7 @@ class TLDetector(object):
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
+        
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
@@ -75,6 +78,7 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
@@ -123,16 +127,17 @@ class TLDetector(object):
 
         """
         #For testing, just return the light state
-        return light.state
 
-        #if(not self.has_image):
-        #    self.prev_light_loc = None
-        #    return False
+        if(not self.has_image):
+            self.prev_light_loc = None
+            return False
 
-        #cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        
 
         #Get classification
-        #return self.light_classifier.get_classification(cv_image)
+        self.light_classifier.get_classification(cv_image)
+        return light.state
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -164,6 +169,7 @@ class TLDetector(object):
                     line_wp_idx = temp_wp_idx
 
         if closest_light:
+            rospy.logwarn('looking for the state')
             state = self.get_light_state(light)
             return line_wp_idx, state
 
