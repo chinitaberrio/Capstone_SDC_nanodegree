@@ -34,7 +34,7 @@ class BoundBox:
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
-        self.model = load_model('/home/workspace/yolo/model.h5')
+        self.model = load_model('/home/workspace/Capstone_SDC_nanodegree/yolo/model.h5')
         self.model._make_predict_function()
         # define the expected input shape for the model - this does not change
         self.input_w, self.input_h = 416, 416
@@ -165,7 +165,9 @@ class TLClassifier(object):
         # add a dimension so that we have one sample
         img = expand_dims(img, 0)
         # perform prediction
+        rospy.logwarn('before')
         yhat = self.model.predict(img)
+        rospy.logwarn('after')
         anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
         # define the probability threshold for detected objects
         class_threshold = 0.8

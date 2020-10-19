@@ -169,7 +169,6 @@ class TLDetector(object):
                     line_wp_idx = temp_wp_idx
 
         if closest_light:
-            rospy.logwarn('looking for the state')
             state = self.get_light_state(light)
             return line_wp_idx, state
 
