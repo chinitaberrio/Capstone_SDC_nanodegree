@@ -23,6 +23,12 @@ class TLClassifier(object):
         self.model._make_predict_function()
         # define the expected input shape for the model - this does not change
         self.input_w, self.input_h = 416, 416
+        self.lower = np.array([17, 15, 100], dtype = "uint8")
+        self.upper = np.array([50, 56, 255], dtype = "uint8")
+        #self.boundaries = [([17, 15, 100], [50, 56, 255]), #red
+                           #([25, 146, 190], [62, 174, 255]), #yellow    
+                           #([103, 86, 65], [145, 133, 128]) #green
+                          #]
 
     def _sigmoid(self, x):
         return 1. / (1. + np.exp(-x))
@@ -160,9 +166,11 @@ class TLClassifier(object):
         for i in range(len(boxes)):
             # Fereshteh code
             
-            #crop_img = img[boxes[i].miny:boxes[i].maxy, boxes[i].miny:boxes[i].maxy]
-            #do something to detect if red
-            #return state = 0
-            pass
+            crop_img = image[boxes[i].ymin:boxes[i].ymax, boxes[i].xmin:boxes[i].xmax]
+            # find the red color within the specified boundaries and apply
+            mask = cv2.inRange(image, self.lower, self.upper)
+            area = (boxes[i].ymax-boxes[i].ymin)*(boxes[i].xmax-boxes[i].xmin)
+            if (np.sum(mask) > area*0.05):
+                return(0)
         
         return state
