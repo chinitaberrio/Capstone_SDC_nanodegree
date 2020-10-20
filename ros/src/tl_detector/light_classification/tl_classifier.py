@@ -140,7 +140,7 @@ class TLClassifier(object):
         #rospy.logwarn('before')
         yhat = self.model.predict(img)
         #rospy.logwarn('after')
-        anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
+        anchors = [[80,90, 200,245, 200,226], [60,80, 40,60, 90,109], [10,13, 30,40, 50,63]]
         # define the probability threshold for detected objects
         class_threshold = 0.8
         boxes = list()
@@ -153,8 +153,8 @@ class TLClassifier(object):
         #self.do_nms(boxes, 0.5)
         # get the details of the traffic light objects
         #v_boxes, v_scores = self.get_boxes(boxes, class_threshold)
-        #name = '/home/workspace/traffic'+str(rospy.get_time())+'.jpg'
-        #self.draw_boxes(name, image, boxes)
+        name = '/home/workspace/traffic'+str(rospy.get_time())+'.jpg'
+        self.draw_boxes(name, image, boxes)
         
         state = 4
         for i in range(len(boxes)):
