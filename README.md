@@ -66,13 +66,8 @@ We are working on a fix to line up the OpenCV versions between the two.
 
 
 ### Detector
-For this project we adopted the approach shown in [machinelearningmastery.com](https://machinelearningmastery.com/how-to-perform-object-detection-with-yolov3-in-keras/) . We use YoloV3-tiny configuration from [darknet](https://github.com/pjreddie/darknet), and [weights](https://pjreddie.com/media/files/yolov3.weights)  from a training process on coco dataset.
-To start the detection, initially, the incoming images from the camera are resized to [416, 416] which corresponds to the input of the CNN, then the pixels in the image are rescaled between 0 and 1. The resulting image is used to generate the prediction. 
-A decoding process takes place, in this case, we only output the predictions of those objects classified as 'traffic light' ( ID = 10 in [coco dataset](https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/))
+For this project we adopted the approach shown in [TrafficLight_Detection-TensorFlowAPI](https://github.com/vatsl/TrafficLight_Detection-TensorFlowAPI) . 
 
-We modified the anchors to have a more rectangular shape as the real traffic lights. Then, the bounding boxes are corrected to match the original image.
-We crop the image using each bounding box from the detector and pass them through a classifier which is in charge of determining the colour of the light. 
-Example of the detection is shown below: 
 ![TF_detection](detection.png)
 
-We applied a colour filter to detect if the image inside the bounding box has at least 5% of its pixels in red. 
+
