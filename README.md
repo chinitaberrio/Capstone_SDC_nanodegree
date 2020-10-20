@@ -2,11 +2,11 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 
 
 This project was developed by:
-Stephany Berrio  chinitaberrio@gmail.com
-Hirata Atsunori hirata.a@mazda.co.jp
-Bhavin Patel bhavinpatel420@gmail.com
-Siddharth Kataria katariasiddharth94@gmail.com
-Fereshteh Firouzi fereshteh.firouzi90@gmail.com
+* Stephany Berrio (Team Lead)  chinitaberrio@gmail.com
+* Hirata Atsunori hirata.a@mazda.co.jp
+* Bhavin Patel bhavinpatel420@gmail.com
+* Siddharth Kataria katariasiddharth94@gmail.com
+* Fereshteh Firouzi fereshteh.firouzi90@gmail.com
 
 ### 
 
@@ -74,3 +74,5 @@ We modified the anchors to have a more rectangular shape as the real traffic lig
 We crop the image using each bounding box from the detector and pass them through a classifier which is in charge of determining the colour of the light. 
 Example of the detection is shown below: 
 ![TF_detection](detection.png)
+
+We applied a colour filter to detect if the image inside the bounding box has at least 5% of its pixels in red. 
