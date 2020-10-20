@@ -153,8 +153,8 @@ class TLClassifier(object):
         #self.do_nms(boxes, 0.5)
         # get the details of the traffic light objects
         #v_boxes, v_scores = self.get_boxes(boxes, class_threshold)
-        name = '/home/workspace/traffic'+str(rospy.get_time())+'.jpg'
-        self.draw_boxes(name, image, boxes)
+        #name = '/home/workspace/traffic'+str(rospy.get_time())+'.jpg'
+        #self.draw_boxes(name, image, boxes)
         
         state = 4
         for i in range(len(boxes)):
