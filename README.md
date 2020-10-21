@@ -66,7 +66,7 @@ We are working on a fix to line up the OpenCV versions between the two.
 
 
 ### Detector
-The traffic light classification model is based on the pre-trained SSD Tensorflow model. We used [Tensorflow Object Detection API](https://github.com/tensorflow/models/research/object_detection)  for detection and classification of the traffic light.  The simulator and real dataset can be downloaded from [TrafficLight_Detection-TensorFlowAPI](https://github.com/vatsl/TrafficLight_Detection-TensorFlowAPI) . The training should be done for both simulator and real image dataset and then exported as a frozen inference graph.
+The traffic light classification model is based on the pre-trained SSD Tensorflow model. We used [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection) for detection and classification of the traffic light.  The simulator and real dataset can be downloaded from [TrafficLight_Detection-TensorFlowAPI](https://github.com/vatsl/TrafficLight_Detection-TensorFlowAPI). The training should be done for both simulator and real image dataset and then exported as a frozen inference graph.
 
 
 ![TF_detection](detection.png)
